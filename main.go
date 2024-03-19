@@ -5,7 +5,7 @@ import (
 	"sign/server"
 )
 
-// @title login登录服务
+// @title sign服务
 // @version 1.0
 func main() {
 	if err := conf.Init(); err != nil {
