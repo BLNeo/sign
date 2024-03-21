@@ -1,12 +1,11 @@
 package redis
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	cluster "github.com/go-redis/redis"
-	"github.com/gomodule/redigo/redis"
+	"github.com/redis/go-redis/v9"
 	"sync"
-	"time"
 )
 
 type Instance struct {
@@ -18,80 +17,36 @@ type Instance struct {
 	IdleTimeout int      `toml:"idle_timeout"`
 }
 
-func (i *Instance) Engine() (*ComponentRedis, error) {
-	if len(i.Addresses) == 0 {
-		return nil, errors.New("addresses is empty")
-	}
-	c := &ComponentRedis{
-		RedisConn: nil,
-	}
-
-	master, err := i.singleRedis()
-	if err != nil {
-		return nil, err
-	}
-	c.RedisConn = master
-	fmt.Println("使用redis单节点方式")
-	return c, nil
-}
-
-func (i *Instance) singleRedis() (*redis.Pool, error) {
-	conn := &redis.Pool{
-		MaxIdle:     i.MaxIdle,
-		MaxActive:   i.MaxActive,
-		IdleTimeout: time.Duration(i.IdleTimeout) * time.Second,
-		Dial: func() (redis.Conn, error) {
-			fmt.Println("--->redis host :", i.Addresses, i.DBNumber)
-			c, err := redis.Dial("tcp", i.Addresses[0], redis.DialDatabase(i.DBNumber), redis.DialPassword(i.Password))
-			if err != nil {
-				fmt.Println("redis connect fail")
-				return nil, err
-			}
-			return c, err
-		},
-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
-			_, err := c.Do("PING")
-			return err
-		},
-	}
-	return conn, nil
-}
-
-// GetRDCluster 集群redis
-func (i *Instance) clusterSetup() *cluster.ClusterClient {
-	redisCluster := cluster.NewClusterClient(&cluster.ClusterOptions{
-		Addrs:    i.Addresses, //set redis cluster url
-		Password: i.Password,  //set password
-	})
-	go redisKeepAliveCluster(redisCluster)
-	return redisCluster
-}
-
-// redisKeepAliveCluster REDIS 保连
-func redisKeepAliveCluster(client *cluster.ClusterClient) {
-	for {
-		client.Ping().Result()
-		time.Sleep(60 * time.Second)
-	}
-}
-
 var (
 	once sync.Once
-	cli  *ComponentRedis
+	rdb  *redis.Client
 )
 
-// InitEngine 初始化一个ENGIN
-func InitEngine(instance *Instance) (*ComponentRedis, error) {
-	engine, err := instance.Engine()
-	if err != nil {
-		return nil, err
-	}
-	once.Do(func() {
-		cli = engine
-	})
-	return engine, nil
+func GetRdb() *redis.Client {
+	return rdb
 }
 
-func GetCli() *ComponentRedis {
-	return cli
+// InitClient 初始化一个ENGIN
+func InitClient(i *Instance) error {
+	if len(i.Addresses) == 0 {
+		return errors.New("addresses is empty")
+	}
+
+	client := redis.NewClient(&redis.Options{
+		Addr:           i.Addresses[0],
+		Password:       "", // 没有密码，默认值
+		DB:             0,  // 默认DB 0
+		MaxActiveConns: i.MaxActive,
+		MaxIdleConns:   i.MaxIdle,
+	})
+
+	err := client.Ping(context.Background()).Err()
+	if err != nil {
+		return err
+	}
+	once.Do(func() {
+		rdb = client
+	})
+	fmt.Println("使用redis单节点方式")
+	return nil
 }

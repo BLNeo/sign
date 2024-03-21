@@ -17,10 +17,9 @@ import (
 )
 
 type Server struct {
-	gin   *gin.Engine           // 路由服务
-	grpc  *grpc.Server          // grpc服务
-	db    *gorm.DB              // db数据库服务
-	redis *redis.ComponentRedis // redis服务
+	gin  *gin.Engine  // 路由服务
+	grpc *grpc.Server // grpc服务
+	db   *gorm.DB     // db数据库服务
 }
 
 func NewServer() *Server {
@@ -42,7 +41,7 @@ func (s *Server) Init(conf *conf.Config) error {
 	models.CreateTable()
 
 	// redis
-	s.redis, err = redis.InitEngine(conf.Redis)
+	err = redis.InitClient(conf.Redis)
 	if err != nil {
 		return err
 	}
