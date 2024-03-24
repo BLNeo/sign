@@ -2,41 +2,40 @@ package signctl
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"sign/models/user"
 	"sign/service/sign_service"
-	"sign/tool/e"
+	"sign/tool/response"
+	"sign/tool/util"
 )
 
 func SignUp(c *gin.Context) {
-	appG := e.Gin{C: c}
+
 	in := &user.SignUpRequest{}
-	if err := c.ShouldBindJSON(in); err != nil {
-		appG.Response(http.StatusOK, e.InvalidParams, nil)
+	if err := util.ValidParams(c, in); err != nil {
+		response.BadRequest(c, err.Error())
 		return
 	}
 
 	err := sign_service.NewSignService().SignUp(in)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR, nil)
+		response.InternalError(c, err.Error())
 		return
 	}
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
+
+	response.Success(c, nil)
 }
 
 func SignIn(c *gin.Context) {
-	appG := e.Gin{C: c}
 	in := &user.SignInRequest{}
-	if err := c.ShouldBindJSON(in); err != nil {
-		appG.Response(http.StatusOK, e.InvalidParams, nil)
+	if err := util.ValidParams(c, in); err != nil {
+		response.BadRequest(c, err.Error())
 		return
 	}
 
 	info, err := sign_service.NewSignService().SignIn(in)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR, nil)
+		response.InternalError(c, err.Error())
 		return
 	}
-
-	appG.Response(http.StatusOK, e.SUCCESS, info)
+	response.Success(c, info)
 }

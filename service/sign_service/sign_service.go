@@ -10,6 +10,10 @@ import (
 	"sign/tool/util"
 )
 
+const (
+	UserPhoneBloomKey = "UserPhoneBloom"
+)
+
 func NewSignService() ISignService {
 	return &SignService{
 		iUser:  user.NewIUser(),
@@ -65,18 +69,12 @@ func (s *SignService) SignIn(in *user.SignInRequest) (*user.SignInRespond, error
 }
 
 func (s *SignService) SignUp(in *user.SignUpRequest) error {
-	userDao := user.NewIUser()
-	// 校验手机是否存在
-	exist, err := userDao.PhoneExist(in.Phone)
-	if err != nil {
-		return err
-	}
-	if exist {
+	// 布隆过滤器
+	if s.iRedis.BFExists(UserPhoneBloomKey, in.Phone) {
 		return errors.New("手机号已注册")
 	}
 
 	uuidString := uuid.New().String()
-
 	insertDate := &models.User{
 		Name:     uuidString[24:],
 		Phone:    in.Phone,
@@ -87,5 +85,16 @@ func (s *SignService) SignUp(in *user.SignUpRequest) error {
 		Gender:   "",
 		Nickname: "",
 	}
-	return userDao.Create(insertDate)
+
+	err := s.iRedis.BFAdd(UserPhoneBloomKey, in.Phone)
+	if err != nil {
+		return err
+	}
+
+	err = s.iUser.Create(insertDate)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

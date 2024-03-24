@@ -1,13 +1,13 @@
 package server
 
 import (
-	signPb "github.com/BLNeo/protobuf-grpc-file/sign"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"net"
 	"sign/conf"
 	"sign/models"
+	signPb "sign/proto/sign"
 	"sign/router"
 	"sign/service/sign_rpc_service"
 	"sign/tool/log"
@@ -52,7 +52,11 @@ func (s *Server) Init(conf *conf.Config) error {
 	gin.SetMode(conf.Http.Mode)
 	s.gin = gin.Default()
 	router.InitRouter(s.gin)
-
+	// validator // 入参校验翻译器
+	err = util.InitTrans()
+	if err != nil {
+		return err
+	}
 	// grpc
 	s.grpc = grpc.NewServer()
 
