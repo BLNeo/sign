@@ -1,10 +1,10 @@
 [app]
-serverName = "login"
+serverName = "sign"
 jwtSecret = "BLNeo"
 debug = true
 
 [http]
-port = ":8082"
+port = ":8080"
 mode = ""
 address = ""
 corsUrl = ""
@@ -14,14 +14,14 @@ writeTimeout = 60
 [mysql]
 user = "root"
 password = "123456"
-host = "127.0.0.1:3306"
-databaseName = "template"
+host = "192.168.220.129:3306"
+databaseName = "develop"
 charset = "utf8mb4"
 logShow = true
 
 [redis]
-addresses = ["47.115.204.44:6379"]
-password = ""
+addresses = ["192.168.220.129:6379"]
+password = 123456
 maxIdle = 30
 maxActive = 30
 idleTimeout = 200

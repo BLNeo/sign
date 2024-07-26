@@ -19,18 +19,18 @@ func (r *RealSignRpc) UserInfo(ctx context.Context, request *signPb.UserInfoRequ
 	if request.UserId == 0 {
 		return nil, errors.New("userId is empty")
 	}
-	info, err := user.NewIUser().Get(request.UserId)
+	_, err := user.NewIUser().Get(request.UserId)
 	if err != nil {
 		return nil, err
 	}
 	resp := &signPb.UserInfoRespond{
-		Id:       info.ID,
-		Name:     info.Name,
-		Phone:    info.Phone,
-		Email:    info.Email,
-		Avatar:   info.Avatar,
-		Gender:   info.Gender,
-		Nickname: info.Nickname,
+		//Id:       info.ID,
+		//Name:     info.Name,
+		//Phone:    info.Phone,
+		//Email:    info.Email,
+		//Avatar:   info.Avatar,
+		//Gender:   info.Gender,
+		//Nickname: info.Nickname,
 	}
 	return resp, err
 }
@@ -44,8 +44,8 @@ func (r *RealSignRpc) VerifyToken(ctx context.Context, request *signPb.VerifyTok
 		return nil, errors.New("token have expired")
 	}
 	resp := &signPb.VerifyTokenRespond{
-		UserId:   claims.UserId,
-		UserName: claims.UserName,
+		//UserId:   claims.UserId,
+		//UserName: claims.UserName,
 	}
 	return resp, nil
 }

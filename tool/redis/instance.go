@@ -34,7 +34,7 @@ func InitClient(i *Instance) error {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:           i.Addresses[0],
-		Password:       "",
+		Password:       i.Password,
 		DB:             0,
 		MaxActiveConns: i.MaxActive,
 		MaxIdleConns:   i.MaxIdle,
