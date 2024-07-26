@@ -1,0 +1,32 @@
+[app]
+serverName = "login"
+jwtSecret = "BLNeo"
+debug = true
+
+[http]
+port = ":8082"
+mode = ""
+address = ""
+corsUrl = ""
+readTimeout = 60
+writeTimeout = 60
+
+[mysql]
+user = "root"
+password = "123456"
+host = "127.0.0.1:3306"
+databaseName = "template"
+charset = "utf8mb4"
+logShow = true
+
+[redis]
+addresses = ["47.115.204.44:6379"]
+password = ""
+maxIdle = 30
+maxActive = 30
+idleTimeout = 200
+cluster = 0
+dBNumber = 0
+
+[grpc]
+port = "9090"
